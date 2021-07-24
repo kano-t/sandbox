@@ -54,6 +54,7 @@
     <Compile Include="Server\BuilderExtension.cs" />
     <Compile Include="Server\CompositeDictionary.cs" />
     <Compile Include="Server\LogInterceptor.cs" />
+    <Compile Include="Server\GrpcServerBuiler.cs" />
     <Compile Include="Server\StreamingService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

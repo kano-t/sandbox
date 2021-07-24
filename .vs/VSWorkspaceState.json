@@ -1,8 +1,11 @@
 {
   "ExpandedNodes": [
     "",
-    "\\GrpcHelper"
+    "\\GrpcHelper",
+    "\\GrpcHelper\\Client",
+    "\\GrpcHelper\\Common",
+    "\\GrpcHelper\\Properties",
+    "\\GrpcHelper\\Server"
   ],
-  "SelectedNode": "\\GrpcHelper",
   "PreviewInSolutionExplorer": false
 }

@@ -1,0 +1,63 @@
+[v-cloak] {
+  display: none;
+}
+.table-sm td {
+  padding: 0px 4px;
+  vertical-align: middle;
+}
+.table-sm th {
+  padding: 1px 4px;
+  font-weight: normal;
+}
+label.col-form-label-sm { 
+  text-align: right;
+  margin-right: 10px;
+}
+input[type="number"].form-control {
+  text-align: right;
+}
+svg.b-icon {
+  height: 0.75em;
+  vertical-align: middle;
+}
+
+.splitpanes.default-theme .splitpanes__splitter {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+
+/*
+.splitpanes.default-theme .splitpanes__pane {
+  background-color: #f2f2f2;
+}
+
+.splitpanes--vertical > .splitpanes__splitter {
+  min-width: 6px;
+  background-color: #111;
+}
+
+.splitpanes--horizontal > .splitpanes__splitter {
+  min-height: 6px;
+  background-color: #111;
+}
+*/
+/*
+.btn {
+}
+.btn-group,
+.b-form-datepicker,
+.input-group-append {
+  vertical-align: middle;
+}
+*/
+/*
+.form-control-sm {
+  height: calc(1.5em + 0.5rem + 2px);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+*/
+

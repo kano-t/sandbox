@@ -13,6 +13,7 @@ namespace GrpcHelper.Client
         public UnaryClient(string host, int port)
         {
             _channel = new Channel(host, port, ChannelCredentials.Insecure);
+            
         }
 
         public Task<string> Call(string service, string name, string req)

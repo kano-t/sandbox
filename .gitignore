@@ -4,3 +4,5 @@
 
 /GrpcHelper/bin/Release
 /GrpcHelper/obj
+/GrpcServer
+/AccordTest
