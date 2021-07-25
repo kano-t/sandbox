@@ -1,31 +1,54 @@
 [v-cloak] {
   display: none;
 }
+input[type="number"] {
+  text-align: right;
+}
 .table-sm td {
   padding: 0px 4px;
   vertical-align: middle;
+  white-space: nowrap;
 }
 .table-sm th {
   padding: 1px 4px;
+  vertical-align: middle;
   font-weight: normal;
+  white-space: nowrap;
 }
 label.col-form-label-sm { 
   text-align: right;
   margin-right: 10px;
 }
-input[type="number"].form-control {
-  text-align: right;
+.form-group {
+  margin-bottom: 0.25rem;
 }
+.splitpanes.default-theme .splitpanes__splitter {
+  background-color: #6c757d;
+  border-color: #343a40;
+}
+.v-select {
+  background-color: #ffffff;
+}
+
+/*
 svg.b-icon {
   height: 0.75em;
   vertical-align: middle;
 }
+*/
+/*
+  --gray: #6c757d;
+  --gray-dark: #343a40;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --info: #17a2b8;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --light: #f8f9fa;
+  --dark: #343a40;
 
-.splitpanes.default-theme .splitpanes__splitter {
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
-
+*/
 
 /*
 .splitpanes.default-theme .splitpanes__pane {

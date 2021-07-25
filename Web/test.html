@@ -7,6 +7,7 @@
 <title></title>
 <link href="bootstrap.css" rel="stylesheet" media="screen">
 <link href="bootstrap-vue.css" rel="stylesheet" media="screen">
+<link href="vue-select.css" rel="stylesheet" media="screen">
 <link href="splitpanes.css" rel="stylesheet" media="screen">
 <link href="test.css" rel="stylesheet" media="screen">
 <link href="" rel="stylesheet" media="screen" id="css">
@@ -22,7 +23,7 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
 <body>
 <div class="app" v-cloak>
   <splitpanes class="default-theme" style="width:100%">
-    <pane size="20" min-size="10" style="height:100vh">
+    <pane size="20" min-size="10" style="height:100vh;overflow:auto">
       <b-form @submit.prevent="onSubmit" @keydown.enter.prevent="focusNext">
         <b-navbar type="dark" variant="dark">
           <b-button type="submit" variant="primary" class="mr-2">Calculate</b-button>
@@ -30,30 +31,61 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
             <b-nav-item @click="onReset">Reset</b-nav-item>
           </b-navbar-nav>
         </b-navbar>
-        <b-button v-b-toggle.collapse1 block squared variant="" class="py-1 d-flex align-items-center">Leg<b-icon icon="chevron-expand" class="ml-auto"></b-icon></b-button>
+        
+        <b-button v-b-toggle.collapse1 block squared variant="" class="py-1 d-flex">Leg<b-icon icon="chevron-expand" class="ml-auto"></b-icon></b-button>
         <b-collapse visible id="collapse1" class="m-2">
-          <b-form-group label="Call/Put"  class="mb-1">
-            <b-form-radio-group v-model="current.trade.type" :options="master.types" required></b-form-radio-group>
+          <b-form-group label="Pv">
+            <cleave v-model="current.result.pv" :options="cleave.uint" class="form-control form-control-sm text-right" onkeydown="onNumberKey(vm.current.result, 'pv')"></cleave>
           </b-form-group>
-          <b-form-group label="Ccy" class="mb-1">
-            <b-form-select v-model="current.trade.ccy" :options="master.ccys"></b-form-select>
+
+          <b-form-group label="Ccy">
+            <b-form-select v-model="current.trade.ccy" :options="master.ccys" /></b-form-select>
           </b-form-group>
-          <b-form-group label="Expiry" label-cols="3" class="mb-1">
+          <b-form-group label="Index">
+            <b-form-select v-model="current.trade.index" :options="master.ccys"></b-form-select>
+          </b-form-group>
+          
+          <b-form-group label="Call/Put" class="show-fxop mt-2">
+            <b-form-select v-model="current.trade.callPut" :options="enums.callPut"></b-form-select>
+          </b-form-group>
+          <b-form-group label="Buy/Sell" class="show-swop">
+            <b-form-select v-model="current.trade.buySell" :options="enums.buySell"></b-form-select>
+          </b-form-group>
+          <b-form-group label="Pay/Rec">
+            <b-form-select v-model="current.trade.payRec" :options="enums.payRec"></b-form-select>
+          </b-form-group>
+
+          <b-form-group label="Expiry" class="show-swop mt-2">
             <b-input-group>
-              <b-form-input v-model="current.trade.expiry" placeholder="yyyy-mm-dd"></b-form-input>
-              <b-input-group-append>
-                <b-form-datepicker v-model="current.trade.expiry" right></b-form-datepicker>
-              </b-input-group-append>
+              <b-form-input v-model="current.trade.expiry" title="yyyy-mm-dd"></b-form-input>
+              <b-input-group-append><b-form-datepicker v-model="current.trade.expiry" right></b-form-datepicker></b-input-group-append>
             </b-input-group>
           </b-form-group>
-          <b-form-group label="Strike" label-cols="3" class="mb-1 dps-option">
+          <b-form-group label="Effective">
+            <b-input-group>
+              <b-form-input v-model="current.trade.effective" title="yyyy-mm-dd"></b-form-input>
+              <b-input-group-append><b-form-datepicker v-model="current.trade.effective" right></b-form-datepicker></b-input-group-append>
+            </b-input-group>
+          </b-form-group>
+          <b-form-group label="Terminate">
+            <b-input-group>
+              <b-form-input v-model="current.trade.terminate" title="yyyy-mm-dd"></b-form-input>
+              <b-input-group-append><b-form-datepicker v-model="current.trade.terminate" right></b-form-datepicker></b-input-group-append>
+            </b-input-group>
+          </b-form-group>
+          
+          <b-form-group label="Strike" class="show-fxop mt-2">
             <b-form-input v-model="current.trade.strike" type="number" step="0.001"></b-form-input>
           </b-form-group>
-          <b-form-group label="Notional" label-cols="3" class="mb-1">
+          <b-form-group label="Notional">
             <cleave v-model="current.trade.notional" :options="cleave.uint" class="form-control form-control-sm text-right" onkeydown="onNumberKey(vm.current.trade, 'notional')"></cleave>
           </b-form-group>
-          <b-form-group label="Premium" label-cols="3" class="mb-1">
-            <div class="col-form-label-sm" v-if="current.result">{{ current.result.premium }}</div>
+
+          <b-form-group label="DCC">
+            <b-form-select v-model="current.trade.dcc" :options="enums.dcc"></b-form-select>
+          </b-form-group>
+          <b-form-group label="BCS">
+            <v-select multiple v-model="current.trade.bcs" :options="master.bcs"></v-select>
           </b-form-group>
 
           <b-button type="submit" variant="primary">Calculate</b-button>
@@ -61,6 +93,7 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
         </b-collapse>
       </b-form>
     </pane>
+    
     <pane style="height:100vh">
       <splitpanes horizontal>
         <pane size="60" min-size="20">
@@ -68,25 +101,32 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
             <b-button variant="primary" class="mr-2" @click="onAdd">Calculate</b-button>
             <b-button @click="onAdd">Add</b-button>
             <b-navbar-nav small>
+              <b-nav-item @click="onClone">Clone</b-nav-item>
               <b-nav-item @click="onDelete">Delete</b-nav-item>
               <b-nav-item @click="onClear">Clear</b-nav-item>
             </b-navbar-nav>
+            <b-navbar-nav small>
+              <b-nav-item-dropdown text="JSON">
+                <b-dropdown-item v-b-modal.modal-export>Export</b-dropdown-item>
+                <b-dropdown-item v-b-modal.modal-import>Import</b-dropdown-item>
+              </b-nav-item-dropdown>
+            </b-navbar-nav>
             <b-navbar-nav small class="ml-auto">
               <b-nav-item-dropdown text="Product" right>
-                <b-dropdown-item href="test.html?option.css">Option</b-dropdown-item>
-                <b-dropdown-item href="test.html?swap.css">Swap</b-dropdown-item>
+                <b-dropdown-item href="test.html?option.css" target="_blank">Option</b-dropdown-item>
+                <b-dropdown-item href="test.html?swap.css" target="_blank">Swap</b-dropdown-item>
               </b-nav-item-dropdown>
             </b-navbar-nav>
           </b-navbar>
-          <b-table :fields="fields" :items="items" head-variant="light" sticky-header="calc(100% - 50px)" small bordered striped>
+          <b-table :fields="fieldsTrade" :items="items" head-variant="light" sticky-header="calc(100% - 50px)" small bordered striped>
             <!-- selectable select-mode="range" @row-selected="onRowSelected" -->
-            <template #head(index)="row">
+            <template #head(number)="row">
               {{ items.length }}
             </template>
             <template #head(checked)="row">
               <b-form-checkbox v-model="allcheck" plain></b-form-checkbox>
             </template>
-            <template #cell(index)="row">
+            <template #cell(number)="row">
               <span class="col-form-label-sm">{{ row.index + 1 }}</span>
             </template>
             <template #cell(radio)="row">
@@ -94,6 +134,74 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
             </template>
             <template #cell(checked)="row">
               <b-form-checkbox v-model="row.item.isChecked" plain></b-form-checkbox>
+            </template>
+            
+            <template #cell(pv)="row">
+              <cleave v-model="row.item.result.pv" :options="cleave.int" class="form-control form-control-sm form-control-plaintext text-right"></cleave>
+            </template>
+            <template #cell(remarks)="row">
+              <b-form-input v-model="row.item.trade.remarks" class="form-control-plaintext"></b-form-input>
+            </template>
+
+            <template #cell(ccy)="row">
+              <b-form-select v-model="row.item.trade.ccy" :options="master.ccys" class="form-control-plaintext"></b-form-select>
+            </template>
+            <template #cell(index)="row">
+              <b-form-select v-model="row.item.trade.index" :options="master.indexes" class="form-control-plaintext"></b-form-select>
+            </template>
+
+            <template #cell(expiry)="row">
+              <b-form-input v-model="row.item.trade.expiry" class="form-control-plaintext" title="yyyy-mm-dd"></b-form-input>
+            </template>
+            <template #cell(effective)="row">
+              <b-form-input v-model="row.item.trade.effective" class="form-control-plaintext" title="yyyy-mm-dd"></b-form-input>
+            </template>
+            <template #cell(terminate)="row">
+              <b-form-input v-model="row.item.trade.terminate" class="form-control-plaintext" title="yyyy-mm-dd"></b-form-input>
+            </template>
+
+            <template #cell(buySell)="row">
+              <!--<b-form-checkbox v-model="row.item.trade.isBuy" switch></b-form-checkbox>-->
+              <b-form-select v-model="row.item.trade.buySell" :options="enums.buySell" class="form-control-plaintext"></b-form-select>
+            </template>
+            <template #cell(payRec)="row">
+              <b-form-select v-model="row.item.trade.payRec" :options="enums.payRec" class="form-control-plaintext"></b-form-select>
+            </template>
+            <template #cell(capFloor)="row">
+              <b-form-select v-model="row.item.trade.capFloor" :options="enums.capFloor" class="form-control-plaintext"></b-form-select>
+            </template>
+            
+            <template #cell(notional)="row">
+              <cleave v-model="row.item.trade.notional" :options="cleave.uint" class="form-control form-control-sm form-control-plaintext text-right"></cleave>
+              <!--
+              <input type="text" v-model.number="row.item.trade.notional" class="form-control form-control-sm form-control-plaintext text-right cleave-uint"></input>
+              <b-form-input v-model.number="row.item.trade.notional" class="form-control-plaintext cleave-uint text-right" @keydown="onNumberKey"></b-form-input>
+              -->
+            </template>
+
+            <template #cell(rate)="row">
+              <b-form-input v-model.number="row.item.trade.rate" type="number" step="0.00001" class="form-control-plaintext"></b-form-input>
+            </template>
+            <template #cell(strike)="row">
+              <b-form-input v-model.number="row.item.trade.strike" type="number" step="0.00001" class="form-control-plaintext"></b-form-input>
+            </template>
+
+            <template #cell(dcc)="row">
+              <b-form-select v-model="row.item.trade.dcc" :options="enums.dcc" class="form-control-plaintext"></b-form-select>
+            </template>
+            <template #cell(bcs)="row">
+              <span class="col-form-label-sm">{{ row.item.trade.bcs }}</span>
+            </template>
+          </b-table>
+        </pane>
+        
+        <pane>
+          <b-table :fields="fieldsCf" :items="cashflows" head-variant="light" sticky-header="calc(100% - 20px)" small bordered striped>
+            <template #head(index)="row">
+              {{ cashflows.length }}
+            </template>
+            <template #cell(index)="row">
+              <span class="col-form-label-sm">{{ row.index + 1 }}</span>
             </template>
             <template #cell(strike)="row">
               <b-form-input v-model.number="row.item.trade.strike" type="number" step="0.001" class="form-control-plaintext"></b-form-input>
@@ -113,27 +221,34 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
               <!--<b-form-radio-group v-model="row.item.trade.type" :options="master.types" size="sm" required></b-form-radio-group>-->
             </template>
             <template #cell(expiry)="row">
-             <b-input-group>
                <b-form-input v-model="row.item.trade.expiry" class="form-control-plaintext" placeholder="yyyy-mm-dd"></b-form-input>
-               <b-input-group-append>
-                 <b-form-datepicker v-model="row.item.trade.expiry"></b-form-datepicker>
-               </b-input-group-append>
-             </b-input-group>
             </template>
           </b-table>
-        </pane>
-        <pane>
+          <!--
           <b-navbar type="dark" variant="dark" class="py-0">
             <b-navbar-nav small>
               <b-nav-item @click="onDelete">Add</b-nav-item>
               <b-nav-item @click="onDelete">Delete</b-nav-item>
             </b-navbar-nav>
           </b-navbar>
+          <b-tabs small  nav-class="bg-secondary" active-nav-item-class="text-light bg-dark">
+            <b-tab title="CashFlow" active title-link-class="text-light">
+            </b-tab>
+            <b-tab title="Vega" title-link-class="text-light"><p>I'm the second tab</p></b-tab>
+          </b-tabs>
+          -->
         </pane>
       </splitpanes>
     </pane>
   </splitpanes>
-  <b-overlay :show="status.isRunning" no-wrap></b-overlay>
+  <b-overlay :show="isRunning" no-wrap></b-overlay>
+  <b-modal id="modal-import" title="Import JSON" @show="json = ''" @ok="onImportJson">
+    <b-form-textarea v-model="json" placeholder="Enter JSON" size="sm" rows="10"></b-form-textarea>
+  </b-modal>
+  <b-modal id="modal-export" title="Export JSON" @show="onExportJson" ok-only>
+    <b-form-textarea v-model="json" class="bg-white" readonly size="sm" rows="10"></b-form-textarea>
+    <!--<pre style="height:50vh;overflow:auto">{{ json }}</pre>-->
+  </b-modal>
 </div>
 <script src="object-assign.js"></script>
 <script src="array-from.js"></script>
@@ -142,12 +257,11 @@ document.getElementById("css").href = window.location.search.replace("?", "") + 
 <script src="bootstrap-vue.js"></script> 
 <script src="bootstrap-vue-icons.min.js"></script> 
 
-<script src="splitpanes.umd.js"></script> 
-
+<script src="splitpanes.umd.js"></script>
 <script src="cleave.js"></script> 
-<script src="vue-cleave.js"></script> 
-<script>
-</script>
+<script src="vue-cleave.js"></script>
+<script src="vue-select.js"></script>
+
 <!--
 <script src="jquery.js"></script> 
 <script src="goldenlayout.min.js"></script>

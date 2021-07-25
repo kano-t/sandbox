@@ -1,7 +1,6 @@
-const {Splitpanes, Pane} = window.splitpanes;
 
 Vue.use(BootstrapVue, {
-  BFormGroup: { labelCols: 3, labelAlign: "right", labelSize: "sm", class: "mb-1" },
+  BFormGroup: { labelCols: 4, labelAlign: "right", labelSize: "sm", class: "mb-1" },
   BFormInput: { size: 'sm' },
   BFormRadioGroup: { size: 'sm', plain: true },
   BFormSelect: { size: 'sm', plain: true },
@@ -9,61 +8,100 @@ Vue.use(BootstrapVue, {
   BFormDatepicker: { size: 'sm', buttonOnly: true, buttonVariant: "", right: true, hideHeader: true }
 });
 Vue.use(VueCleave);
+Vue.component('v-select', VueSelect.VueSelect);
+Vue.component('Splitpanes', splitpanes.Splitpanes);
+Vue.component('Pane', splitpanes.Pane);
 
-const items = [
-  { trade: { ccy: "USD", expiry: "2022/1/22", strike: 101.636, type: "Call" }, isChecked: true },
-  { trade: { ccy: "EUR", expiry: "2022-01-23", strike: 102.834, type: "Put" } },
-  { trade: { ccy: "AUD", expiry: "2022-01-22", strike: 111.455, type: "Call", notional: 12345678 } },
-  { trade: { ccy: "USD", expiry: "2022-01-22", strike: 121.987, type: "Call" }, isChecked: true },
-  { trade: { ccy: "EUR", expiry: "2022-01-23", strike: 102.23, type: "Put" } },
-  { trade: { ccy: "AUD", expiry: "2022-1-22", strike: 131.23, type: "Call" } },
-  { trade: { ccy: "USD", expiry: "2022-1-22", strike: 101.23, type: "Call" } },
-  { trade: { ccy: "EUR", expiry: "2022-1-23", strike: 132.23, type: "Put" } },
-  { trade: { ccy: "AUD", expiry: "2022-1-22", strike: 101.23, type: "Call" } },
-]
 const master = {
   ccys: ["USD", "EUR", "AUD"],
-  types: ["Call", "Put"]
+  bcs: ["TKY", "LDN", "NYK"],
+}
+
+const tradeFields =  [
+  { key: 'number', label: '', sortable: false, width: 30, class: "text-right" },
+  { key: 'radio', label: '', sortable: false, width: 30 },
+  { key: 'checked', label: '', sortable: false, width: 30 },
+
+  { key: 'pv', width: 120 },
+  { key: 'remarks', width: 120 },
+
+  { key: 'ccy', width: 80 },
+  { key: 'index', width: 120 },
+
+  { key: 'expiry', width: 125, class: "show-swop" },
+  { key: 'effective', width: 110, class: "hide-fxop" },
+  { key: 'terminate', width: 110, class: "hide-fxop" },
+
+  { key: 'buySell', label: 'BuySell', width: 70, class: "show-swop" },
+  { key: 'payRec', label: 'PayRec', width: 70, class: "show-swop" },
+  { key: 'capFloor', width: 70, class: "show-cap" },
+  { key: 'callPut', label: 'CallPut', width: 70, class: "show-fxop" },
+
+  { key: 'notional', width: 110, },
+  { key: 'strike', width: 110, class: "show-cap show-fxop" },
+
+  { key: 'dcc', sortable: false, width: 70 },
+  { key: 'bcs', sortable: false, width: 70 },
+
+]
+
+function prepareTableFields(fields, sortable) {
+  fields.forEach(function(field) {
+    if (!field.thStyle && field.width) {
+      field.thStyle =  { width: field.width + "px" }
+    }
+    if (field.sortable == undefined) {
+      field.sortable = sortable
+    } 
+  })
+  return fields;
+}
+
+function createItem() {
+  return { 
+    result: { }, 
+    trade: {
+      cashFlow1: [],
+      cashFlow2: [],
+    },
+  };
 }
 
 const vm = new Vue({
   el: '.app',
-  components: { Splitpanes, Pane },
   data: {
-    items: [],
     cleave: {
-      uint: {
-        numeral: true,
-        numeralPositiveOnly: true,
-        numeralDecimalScale: 2
-        //numeralIntegerScale: 0,
-      },
+      int: { numeral: true, numeralDecimalScale: 0 },
+      uint: { numeral: true, numeralDecimalScale: 0, numeralPositiveOnly: true },
+      decimal: { numeral: true },
+      udecimal: { numeral: true, numeralPositiveOnly: true },
     },
-    fields: [
+    fieldsTrade: prepareTableFields(tradeFields, true),
+    fieldsCf: [
       { key: 'index', label: '', thStyle: { width: "30px" }, thClass: "text-right", tdClass: "text-right" },
-      { key: 'radio', label: '', thStyle: { width: "30px" } },
-      { key: 'checked', label: '', thStyle: { width: "30px" } },
       { key: 'type', label: 'Type', sortable: true, thStyle: { width: "70px" } },
-      { key: 'ccy', sortable: true, thStyle: { width: "80px" } },
-      { key: 'expiry', sortable: true, thStyle: { width: "125px" } },
-      { key: 'strike', sortable: true, thStyle: { width: "120px" }, class: "dps-option" },
-      { key: 'notional', sortable: true, thStyle: { width: "120px" } },
-      'premium',
-      'delta',
-      'gamma',
-      'vega',
+      { key: 'ccy', thStyle: { width: "80px" } },
+      { key: 'expiry', thStyle: { width: "125px" } },
+      { key: 'strike', thStyle: { width: "120px" }, class: "dps-option" },
+      { key: 'notional', thStyle: { width: "120px" } },
     ],
-    allcheck: false,
-    //selectedItems: [],
-    checkedIndex: 0,
-    master: null,
-    status: {
-      isRunning: false
+    enums: {
+      buySell: ["Buy", "Sell"],
+      callPut: ["Call", "Put"],
+      payRec: ["Pay", "Rec"],
+      capFloor: ["Cap", "Floor", "Straddle"],
+      dcc: ["Act365F", "Act360"],
     },
+    master: null,
+    items: [],
+    allcheck: false,
+    checkedIndex: 0,
+    json : null,
+    isRunning: false,
   },
   created: function(){
      this.master = master;
-     this.items = items;
+     this.onAdd();
   },
   watch: {
     "form.tenor": function(val) {
@@ -83,80 +121,71 @@ const vm = new Vue({
     current: function() {
       return this.items[this.checkedIndex] || {};
     },
+    cashflows: function() {
+      return (this.current.cashflow1 || []).concat(this.current.cashflow2 || []);
+    },
     selectedItems: function() {
-      return this.items.filter(function(item) {
+      var items = this.items.filter(function(item) {
         return item.isChecked;
       });
+      return items.length == 0 ? [this.current] : items;
     },
   },
   methods: {
     onSubmit: function(event) {
       var _this = this;
-      this.result = {};
-      this.status.isRunning = true;
+      this.isRunning = true;
       setTimeout(function() {
-        _this.status.isRunning = false;
-        _this.result = { premium: _this.form.strike + 1, delta: _this.form.strike + 2, greeks : { gamma: { "JPY": _this.form.strike + 3 } } }
-        //alert(JSON.stringify(_this.form));
+        _this.isRunning = false;
+        _this.current.result = { pv: 1234.56 }
       }, 1000);
     },
     onReset: function(event) {
        this.current.trade = { bcs: [] };
-       this.current.result = null;
-    },
-    round: function(val, digit) {
-       var d = Math.pow(10, digit);
-       return val ? Math.round(val * d) / d : val;
-    },
-    getFirst: function(obj) {
-       return obj ? obj[Object.keys(obj)[0]] : null;
-    },
-    toggleAll: function(isChecked) {
-      this.items.forEach(function(item) {
-        //item.isChecked = isChecked;
-      });
+       this.current.result = {};
     },
     onAdd: function() {
-        this.items.push({ ccy: "AUD", expiry: "2022-1-22", strike: 101.23, type: "Call" });
+        this.items.push(createItem());
+        this.checkedIndex = this.items.length - 1
+    },
+    onClone: function() {
+        var items = this.items;
+        this.selectedItems.forEach(function(item) {
+           items.push(JSON.parse(JSON.stringify(item)));
+        });
     },
     onDelete: function() {
         if (!confirm("delete?")) {
           return;
         }
         var items = this.items;
-        (this.selectedItems || [this.current]).forEach(function(item) {
+        this.selectedItems.forEach(function(item) {
            items.splice(items.indexOf(item), 1);
         });
         if (items.length == 0) {
-          onAdd();
+          this.onAdd();
         }
     },
     onClear: function() {
-        if (!confirm("clear?")) {
-          return;
+        if (confirm("clear?")) {
+          this.items.splice(0);
+          this.onAdd();
         }
-        this.items.splice(0);
-        this.onAdd();
+    },
+    onExportJson: function() {
+      this.json = JSON.stringify(this.selectedItems.map(function(item) {
+         return item.trade;
+      }), null, 2);
+    },
+    onImportJson: function() {
+        var items = this.items;
+        JSON.parse(this.json).forEach(function(trade) {
+           items.push({ trade: trade, result: {} });
+        });
     },
     focusNext: function(event) {
       focusNext(event);
     },
-    onLoad: function(event) {
-      var _this = this;
-      this.status.isRunning = true;
-      setTimeout(function() {
-        _this.status.isRunning = false;
-        _this.form = {
-          date: null,
-          number: 123.45,
-          asof: "2020-01-03",
-          date: "2020-01-02",
-          rate: 0.123,
-          index: "JPY.LIBOR.3M",
-          bcs: ["LDN", "TKY"]
-        };
-      }, 1000);
-    }
   }
 });
 
@@ -180,6 +209,9 @@ function focusNext(event) {
     next.focus();
   }
 }
+
+
+
 
 /*
 window.onload = function() {
@@ -224,5 +256,13 @@ new Cleave('.input-date', {
         delimiter: '-',
         datePattern: ['Y', 'm', 'd'],
 });
+
+    round: function(val, digit) {
+       var d = Math.pow(10, digit);
+       return val ? Math.round(val * d) / d : val;
+    },
+    getFirst: function(obj) {
+       return obj ? obj[Object.keys(obj)[0]] : null;
+    },
 */
 
